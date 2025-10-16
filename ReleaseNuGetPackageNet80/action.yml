@@ -1,0 +1,44 @@
+name: 'Pack and Publish .NET NuGet Package for .net8.0' 
+description: 'Restores, builds, packs, and publishes a .NET NuGet package to GitHub Packages'
+inputs:
+  dotnet-version:
+    description: 'Version of .NET to use'
+    required: false
+    default: '8.0.x'
+  gh-packages-token:
+    description: 'GitHub Packages token'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+      shell: bash
+
+    - name: Build
+      run: dotnet build --configuration Release
+      shell: bash
+
+    - name: Extract version from tag
+      id: get_version
+      run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - name: Pack NuGet package
+      run: dotnet pack --configuration Release --output ./nuget /p:PackageVersion=${{ steps.get_version.outputs.version }}
+      shell: bash
+
+    - name: Publish to GitHub Packages
+      run: dotnet nuget push ./nuget/*.symbols.nupkg --source "https://nuget.pkg.github.com/Official-EwE/index.json" --api-key "${{ inputs.gh-packages-token }}" --skip-duplicate
+      env:
+        NUGET_AUTH_TOKEN: ${{ inputs.gh-packages-token }}
+      shell: bash

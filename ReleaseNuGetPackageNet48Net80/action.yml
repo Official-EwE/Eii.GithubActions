@@ -1,4 +1,4 @@
-name: 'Publish .NET NuGet Package'
+name: 'Publish .NET NuGet Package for .net48 and .net8.0'
 description: 'Builds and publishes a .NET NuGet package to GitHub Packages'
 inputs:
   dotnet-version:
