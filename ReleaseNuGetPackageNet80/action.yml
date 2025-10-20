@@ -33,6 +33,10 @@ runs:
       run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
       shell: bash
 
+    - name: Show extracted version
+      run: echo "Version is ${{ steps.get_version.outputs.version }}"
+      shell: bash
+
     - name: Pack NuGet package
       run: dotnet pack --configuration Release --output ./nuget /p:PackageVersion=${{ steps.get_version.outputs.version }}
       shell: bash

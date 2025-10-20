@@ -40,6 +40,10 @@ runs:
         echo "version=$version" >> $env:GITHUB_OUTPUT
       shell: pwsh
 
+    - name: Show extracted version
+      run: echo "Version is ${{ steps.get_version.outputs.version }}"
+      shell: pwsh
+
     - name: Pack NuGet package
       run: dotnet pack --configuration Release --output ./nuget /p:PackageVersion=${{ steps.get_version.outputs.version }}
       shell: pwsh
