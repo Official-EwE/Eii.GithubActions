@@ -20,6 +20,25 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v4.1.0
+      with:
+        versionSpec: '6.4.0'
+
+    - name: Run GitVersion
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v4.1.0
+      with:
+        overrideConfig: |
+          workflow=TrunkBased/preview1
+          commit-message-incrementing=Enabled
+          tag-prefix=v
+          increment=Patch
+
+    - name: Show extracted version
+      run: echo "Version is ${{ steps.gitversion.outputs.SemVer }}"
+      shell: bash
+
     - name: Restore dependencies
       run: dotnet restore
       shell: bash
@@ -28,17 +47,8 @@ runs:
       run: dotnet build --configuration Release
       shell: bash
 
-    - name: Extract version from tag
-      id: get_version
-      run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
-      shell: bash
-
-    - name: Show extracted version
-      run: echo "Version is ${{ steps.get_version.outputs.version }}"
-      shell: bash
-
     - name: Pack NuGet package
-      run: dotnet pack --configuration Release --output ./nuget /p:PackageVersion=${{ steps.get_version.outputs.version }}
+      run: dotnet pack --configuration Release --output ./nuget /p:PackageVersion=${{ steps.gitversion.outputs.SemVer }}
       shell: bash
 
     - name: Publish to GitHub Packages
