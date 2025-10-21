@@ -8,6 +8,7 @@ inputs:
   gh-packages-token:
     description: 'GitHub Packages token'
     required: true
+
 runs:
   using: 'composite'
   steps:
@@ -22,9 +23,26 @@ runs:
     - name: Install .NET Framework targeting pack
       run: choco install netfx-4.8-devpack -y
       shell: pwsh
-    - name: Add GitHub Packages source
-      run: dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name github --username ${{ github.actor }} --password ${{ inputs.gh-packages-token }} --store-password-in-clear-text
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v4.1.0
+      with:
+        versionSpec: '6.4.0'
+
+    - name: Run GitVersion
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v4.1.0
+      with:
+        overrideConfig: |
+          workflow=TrunkBased/preview1
+          commit-message-incrementing=Enabled
+          tag-prefix=v
+          increment=Patch
+
+    - name: Show extracted version
+      run: echo "Version is ${{ steps.gitversion.outputs.SemVer }}"
       shell: pwsh
+
     - name: Restore dependencies
       run: dotnet restore
       shell: pwsh
@@ -33,27 +51,20 @@ runs:
       run: dotnet build --configuration Release
       shell: pwsh
 
-    - name: Extract version from tag
-      id: get_version
-      run: |
-        $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
-        echo "version=$version" >> $env:GITHUB_OUTPUT
-      shell: pwsh
-
-    - name: Show extracted version
-      run: echo "Version is ${{ steps.get_version.outputs.version }}"
-      shell: pwsh
-
     - name: Pack NuGet package
-      run: dotnet pack --configuration Release --output ./nuget /p:PackageVersion=${{ steps.get_version.outputs.version }}
+      run: dotnet pack --configuration Release --output ./nuget /p:PackageVersion=${{ steps.gitversion.outputs.SemVer }}
       shell: pwsh
 
     - name: List NuGet output files
       run: dir ./nuget
       shell: pwsh
 
+    - name: Add GitHub Packages source
+      run: dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name github --username ${{ github.actor }} --password ${{ inputs.gh-packages-token }} --store-password-in-clear-text
+      shell: pwsh
+
     - name: Publish to GitHub Packages
       run: |
-        dotnet nuget push "./nuget/${{ github.event.repository.name }}.${{ steps.get_version.outputs.version }}.nupkg" --source "github" --api-key ${{ inputs.gh-packages-token }} --skip-duplicate
-        dotnet nuget push "./nuget/${{ github.event.repository.name }}.${{ steps.get_version.outputs.version }}.symbols.nupkg" --source "github" --api-key ${{ inputs.gh-packages-token }} --skip-duplicate
+        dotnet nuget push "./nuget/${{ github.event.repository.name }}.${{ steps.gitversion.outputs.SemVer }}.nupkg" --source "github" --api-key ${{ inputs.gh-packages-token }} --skip-duplicate
+        dotnet nuget push "./nuget/${{ github.event.repository.name }}.${{ steps.gitversion.outputs.SemVer }}.symbols.nupkg" --source "github" --api-key ${{ inputs.gh-packages-token }} --skip-duplicate
       shell: pwsh
