@@ -54,7 +54,7 @@ runs:
       shell: bash
 
     - name: Publish to GitHub Packages
-      run: dotnet nuget push ./nuget/*.symbols.nupkg --source "https://nuget.pkg.github.com/Official-EwE/index.json" --api-key "${{ secrets.GH_PACKAGES_TOKEN }}" --skip-duplicate
+      run: dotnet nuget push ./nuget/*.symbols.nupkg --source "https://nuget.pkg.github.com/Official-EwE/index.json" --api-key "${{ inputs.gh-packages-token }}" --skip-duplicate
       env:
-        NUGET_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+        NUGET_AUTH_TOKEN: ${{ inputs.gh-packages-token }}
       shell: bash
