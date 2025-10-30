@@ -1,0 +1,28 @@
+name: 'Build check for .net8.0' 
+description: 'Builds the project. Used to check if there are build errors before checking in'
+inputs:
+  dotnet-version:
+    description: 'Version of .NET to use'
+    required: false
+    default: '8.0.x'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    - name: Restore dependencies
+      run: dotnet restore
+      shell: pwsh
+
+    - name: Build solution
+      run: dotnet build --configuration Release --no-restore
+      shell: pwsh
