@@ -29,20 +29,12 @@ runs:
       run: echo "solution-file is ${{ inputs.solution-file }}"
       shell: pwsh
 
-    - name: Add GitHub Packages source
-      run: dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name github --username ${{ github.actor }} --password ${{ inputs.gh-packages-token }} --store-password-in-clear-text
+    - name: Add GitHub Packages source      # name = github2 to avoid conflict with existing github source
+      run: dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name github2 --username ${{ github.actor }} --password ${{ inputs.gh-packages-token }} --store-password-in-clear-text
       shell: pwsh
 
     - name: Restore dependencies
       run: dotnet restore '${{ inputs.solution-file }}'
-      shell: pwsh
-
-    - name: List Sources directory
-      run: dir ./Sources
-      shell: pwsh
-
-    - name: Show cmd
-      run: echo "cmd is dotnet build '${{ inputs.solution-file }}' --configuration Release --no-restore"
       shell: pwsh
 
     - name: Build solution
