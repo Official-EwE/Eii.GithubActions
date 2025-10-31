@@ -26,12 +26,8 @@ runs:
       run: echo "solution-dir is ${{ inputs.solution-dir }}"
       shell: pwsh
 
-    - name: CD to Sources directory
-      run: cd ${{ inputs.solution-dir }}
-      shell: pwsh
-
     - name: List Sources directory
-      run: dir
+      run: dir ./Sources
       shell: pwsh
 
     - name: Restore dependencies
@@ -39,5 +35,5 @@ runs:
       shell: pwsh
 
     - name: Build solution
-      run: dotnet build --configuration Release --no-restore
+      run: cd ${{ inputs.solution-dir }} && dotnet build --configuration Release --no-restore
       shell: pwsh
