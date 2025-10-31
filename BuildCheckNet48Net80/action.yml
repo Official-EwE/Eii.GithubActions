@@ -35,5 +35,5 @@ runs:
       shell: pwsh
 
     - name: Build solution
-      run: cd ${{ inputs.solution-dir }} && dotnet build --configuration Release --no-restore
+      run: cd ${{ inputs.solution-dir }}; dotnet build --configuration Release --no-restore
       shell: pwsh
