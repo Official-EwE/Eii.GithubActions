@@ -34,9 +34,14 @@ runs:
       run: dir ./Sources
       shell: pwsh
 
+    - name: Show cmd
+      run: echo "cmd is dotnet build '${{ inputs.solution-file }}' --configuration Release --no-restore"
+      shell: pwsh
+
     - name: Build solution
       run: |
         $cmd = "dotnet build '${{ inputs.solution-file }}' --configuration Release --no-restore"
         Write-Host "Build command: $cmd"
         Invoke-Expression $cmd
       shell: pwsh
+
