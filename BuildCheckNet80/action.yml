@@ -5,6 +5,10 @@ inputs:
     description: 'Version of .NET to use'
     required: false
     default: '8.0.x'
+  solution-file:
+    description: 'Solution file to build'
+    required: false
+    default: ''
 
 runs:
   using: "composite"
@@ -24,7 +28,7 @@ runs:
       shell: bash
 
     - name: Build solution
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build ${{ inputs.solution-file }} --configuration Release --no-restore
       shell: bash
    
 
