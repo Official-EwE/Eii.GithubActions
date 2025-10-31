@@ -22,6 +22,14 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
+    - name: List Current directory
+      run: dir
+      shell: pwsh
+
+    - name: Show solution
+      run: echo "solution-file is ${{ inputs.solution-file }}"
+      shell: pwsh
+
     - name: Restore dependencies
       run: dotnet restore
       shell: pwsh
