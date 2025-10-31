@@ -29,6 +29,10 @@ runs:
       run: echo "solution-file is ${{ inputs.solution-file }}"
       shell: pwsh
 
+    - name: list sources
+      run: dotnet nuget list source
+      shell: pwsh
+
     - name: Reset GitHub Packages source
       shell: pwsh
       run: |
