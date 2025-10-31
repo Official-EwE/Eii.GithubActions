@@ -26,17 +26,17 @@ runs:
       run: echo "solution-file is ${{ inputs.solution-file }}"
       shell: pwsh
 
-    - name: List Sources directory
-      run: dir ./Sources
-      shell: pwsh
-
     - name: Restore dependencies
       run: dotnet restore
       shell: pwsh
 
-    - name: Build solution
+    - name: List Sources directory
+      run: dir ./Sources
       shell: pwsh
+
+    - name: Build solution
       run: |
         $cmd = "dotnet build '${{ inputs.solution-file }}' --configuration Release --no-restore"
         Write-Host "Build command: $cmd"
         Invoke-Expression $cmd
+      shell: pwsh
