@@ -22,8 +22,8 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
-    - name: List Current directory
-      run: dir
+    - name: List Sources directory
+      run: dir ./Sources
       shell: pwsh
 
     - name: Show solution
