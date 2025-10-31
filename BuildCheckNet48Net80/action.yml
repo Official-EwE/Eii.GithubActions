@@ -5,8 +5,8 @@ inputs:
     description: 'Version of .NET to use'
     required: false
     default: '8.0.x'
-  solution-dir:
-    description: 'directory with the Solution'
+  solution-file:
+    description: 'Solution file with path'
     required: false
     default: ''
 runs:
@@ -22,8 +22,8 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
-    - name: Show solution
-      run: echo "solution-dir is ${{ inputs.solution-dir }}"
+    - name: Show solution file
+      run: echo "solution-file is ${{ inputs.solution-file }}"
       shell: pwsh
 
     - name: List Sources directory
@@ -35,5 +35,8 @@ runs:
       shell: pwsh
 
     - name: Build solution
-      run: cd ${{ inputs.solution-dir }}; dotnet build --configuration Release --no-restore
       shell: pwsh
+      run: |
+        $cmd = "dotnet build '${{ inputs.solution-file }}' --configuration Release --no-restore"
+        Write-Host "Build command: $cmd"
+        Invoke-Expression $cmd
