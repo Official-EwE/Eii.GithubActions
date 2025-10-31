@@ -27,7 +27,7 @@ runs:
       shell: pwsh
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore '${{ inputs.solution-file }}'
       shell: pwsh
 
     - name: List Sources directory
