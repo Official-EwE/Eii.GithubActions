@@ -27,7 +27,7 @@ runs:
         dotnet-version: ${{ inputs.dotnet-version }}
 
     - name: Add GitHub Packages source
-      run: dotnet nuget update source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name github --username ${{ github.actor }} --password ${{ inputs.gh-packages-token }} --store-password-in-clear-text
+      run: dotnet nuget update source github --username ${{ github.actor }} --password ${{ inputs.gh-packages-token }} --store-password-in-clear-text
       shell: pwsh
 
     - name: Restore dependencies
