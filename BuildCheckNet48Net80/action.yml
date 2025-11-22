@@ -1,6 +1,10 @@
 name: 'Build check for .net8.0' 
 description: 'Builds the project. Used to check if there are build errors before checking in'
 inputs:
+  gh-packages-token:
+    description: 'GitHub Packages token'
+    required: false
+    default: ''
   dotnet-version:
     description: 'Version of .NET to use'
     required: false
