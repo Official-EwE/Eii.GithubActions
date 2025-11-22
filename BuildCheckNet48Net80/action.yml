@@ -23,7 +23,7 @@ runs:
         dotnet-version: ${{ inputs.dotnet-version }}
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ${{ inputs.solution-file }}
       shell: pwsh
 
     - name: Build solution
