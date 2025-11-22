@@ -26,15 +26,11 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
-    - name: Ensure GitHub NuGet source
+    - name: Authenticate to GitHub Packages
       run: |
-        if (dotnet nuget list source | Select-String "github") {
-          dotnet nuget remove source github
-        }
-        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" `
-          --name github `
-          --username ${{ github.actor }} `
-          --password ${{ inputs.gh-packages-token }} `
+          dotnet nuget update source "github-Official-EwE" `
+          --username "${{ github.repository_owner }}" `
+          --password "${{ inputs.gh-packages-token }}" `
           --store-password-in-clear-text
       shell: pwsh
 
