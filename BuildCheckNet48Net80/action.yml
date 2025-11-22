@@ -26,6 +26,11 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
+    - name: Setup NuGet
+      run: |
+        dotnet nuget list source
+      shell: pwsh
+
     - name: Authenticate to GitHub Packages
       run: |
           dotnet nuget update source "github-Official-EwE" `
