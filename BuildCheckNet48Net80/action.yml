@@ -1,10 +1,6 @@
 name: 'Build check for .net8.0' 
 description: 'Builds the project. Used to check if there are build errors before checking in'
 inputs:
-  gh-packages-token:
-    description: 'GitHub Packages token'
-    required: false
-    default: ''
   dotnet-version:
     description: 'Version of .NET to use'
     required: false
@@ -26,16 +22,26 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
-    - name: Setup NuGet
+    - name: List NuGet sources
       run: |
         dotnet nuget list source
       shell: pwsh
 
-    - name: Authenticate to GitHub Packages
+    - name: Print GitHub context variables
       run: |
-          dotnet nuget update source "github-Official-EwE" `
-          --username "${{ github.repository_owner }}" `
-          --password "${{ inputs.gh-packages-token }}" `
+        echo "Repository Owner: ${{ github.repository_owner }}"
+        echo "Actor: ${{ github.actor }}"
+      shell: pwsh
+
+    - name: Ensure github-Official-EwE NuGet source
+      run: |
+        if (dotnet nuget list source | Select-String "github-Official-EwE") {
+          dotnet nuget remove source github-Official-EwE
+        }
+        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" `
+          --name "github-Official-EwE `
+          --username ${{ github.repository_owner }} `
+          --password ${{ secrets.GITHUB_TOKEN }} `
           --store-password-in-clear-text
       shell: pwsh
 
