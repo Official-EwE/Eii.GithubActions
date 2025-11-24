@@ -5,9 +5,6 @@ inputs:
     description: 'Version of .NET SDK to use'
     required: false
     default: '8.0.x'
-  gh-packages-token:
-    description: 'GitHub Packages token'
-    required: true
 
 runs:
   using: 'composite'
@@ -95,10 +92,6 @@ runs:
     - name: List NuGet output files
       run: dir ./nuget
       shell: pwsh
-
-    # - name: Add GitHub Packages source
-    #   run: dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name github --username ${{ github.actor }} --password ${{ inputs.gh-packages-token }} --store-password-in-clear-text
-    #   shell: pwsh
 
     - name: Publish to GitHub Packages
       run: |
