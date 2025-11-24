@@ -36,6 +36,10 @@ runs:
           --store-password-in-clear-text
       shell: pwsh
 
+    - name: Restore dependencies
+      run: dotnet restore ${{ inputs.solution-file }}
+      shell: pwsh
+
     - name: Build solution
       run: dotnet build ${{ inputs.solution-file }} --configuration Release --no-restore
       shell: pwsh
