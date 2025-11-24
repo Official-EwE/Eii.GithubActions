@@ -102,6 +102,7 @@ runs:
 
     - name: Publish to GitHub Packages
       run: |
-        dotnet nuget push "./nuget/${{ github.event.repository.name }}.${{ steps.gitversion.outputs.SemVer }}.nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ inputs.gh-packages-token }} --skip-duplicate
-        dotnet nuget push "./nuget/${{ github.event.repository.name }}.${{ steps.gitversion.outputs.SemVer }}.symbols.nupkg" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ inputs.gh-packages-token }} --skip-duplicate
+        Get-ChildItem -Path ./nuget -Filter *.nupkg | ForEach-Object {
+          dotnet nuget push $_.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ inputs.gh-packages-token }} --skip-duplicate
+        }
       shell: pwsh
