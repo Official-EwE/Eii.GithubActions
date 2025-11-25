@@ -75,7 +75,9 @@ runs:
           --store-password-in-clear-text
       shell: pwsh
 
-
+    - name: List NuGet data sources
+      run: dotnet nuget list source --format detailed
+      shell: pwsh
 
     - name: Restore dependencies
       run: dotnet restore
