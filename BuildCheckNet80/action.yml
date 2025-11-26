@@ -9,7 +9,6 @@ inputs:
     description: 'Solution file to build'
     required: false
     default: ''
-
 runs:
   using: "composite"
   steps:
@@ -23,8 +22,22 @@ runs:
       with:
         dotnet-version: ${{ inputs.dotnet-version }}
 
+    # Ensure that the github-Official-EwE NuGet source is configured. The standard GITHUB_TOKEN is used. It's automatically created by GitHub Actions and is available as 'github.toke'
+    # So you don't have to pass it to this action explicitly. (because 'secrets', and subsequently 'secrets.GITHUB_TOKEN' is not accessible in reusable workflows)
+    - name: Ensure github-Official-EwE NuGet source
+      run: |
+        if (dotnet nuget list source | Select-String "github-Official-EwE") {
+          dotnet nuget remove source github-Official-EwE
+        }
+        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" `
+          --name "github-Official-EwE" `
+          --username ${{ github.repository_owner }} `
+          --password ${{ github.token }} `
+          --store-password-in-clear-text
+      shell: bash
+
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore ${{ inputs.solution-file }}
       shell: bash
 
     - name: Build solution
