@@ -61,13 +61,13 @@ runs:
     # So you don't have to pass it to this action explicitly. (because 'secrets', and subsequently 'secrets.GITHUB_TOKEN' is not accessible in reusable workflows)
     - name: Ensure github-Official-EwE NuGet source
       run: |
-        if (dotnet nuget list source | Select-String "github-Official-EwE") {
+        if dotnet nuget list source | grep -q "github-Official-EwE"; then
           dotnet nuget remove source github-Official-EwE
-        }
-        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" `
-          --name "github-Official-EwE" `
-          --username ${{ github.repository_owner }} `
-          --password ${{ github.token }} `
+        fi
+        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+          --name "github-Official-EwE" \
+          --username ${{ github.repository_owner }} \
+          --password ${{ github.token }} \
           --store-password-in-clear-text
       shell: bash
 
@@ -93,7 +93,9 @@ runs:
 
     - name: Publish to GitHub Packages
       run: |
-        Get-ChildItem -Path ./nuget -Filter *symbols.nupkg | ForEach-Object {
-          dotnet nuget push $_.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ github.token }} --skip-duplicate
-        }
+        for file in ./nuget/*symbols.nupkg; do
+          if [ -f "$file" ]; then
+            dotnet nuget push "$file" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ github.token }} --skip-duplicate
+          fi
+        done
       shell: bash
