@@ -49,7 +49,7 @@ runs:
         fi
         dotnet nuget add source "https://buf.build/gen/nuget/index.json" \
           --name "BSR" \
-          --username "rikkert01" \
+          --username "bsr" \
           --password "${{ inputs.bsr-token }}" \
           --store-password-in-clear-text
       shell: bash
