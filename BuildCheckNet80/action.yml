@@ -9,6 +9,11 @@ inputs:
     description: 'Solution file to build'
     required: false
     default: ''
+  bsr-token:
+    description: 'BSR_TOKEN for authentication with BSR NuGet source'
+    required: false
+    default: ''
+
 runs:
   using: "composite"
   steps:
@@ -33,6 +38,19 @@ runs:
           --name "github-Official-EwE" \
           --username ${{ github.repository_owner }} \
           --password ${{ github.token }} \
+          --store-password-in-clear-text
+      shell: bash
+
+    - name: Ensure BSR NuGet source
+      if: ${{ inputs.bsr-token != '' }}
+      run: |
+        if dotnet nuget list source | grep -q "BSR"; then
+          dotnet nuget remove source BSR
+        fi
+        dotnet nuget add source "https://buf.build/gen/nuget/index.json" \
+          --name "BSR" \
+          --username "bsr" \
+          --password "${{ inputs.bsr-token }}" \
           --store-password-in-clear-text
       shell: bash
 
