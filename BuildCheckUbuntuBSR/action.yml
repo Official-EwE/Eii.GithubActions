@@ -1,0 +1,67 @@
+name: 'Build check with BSR package source' 
+description: 'Builds the project. Used to check if there are build errors before checking in'
+inputs:
+  dotnet-version:
+    description: 'Version of .NET to use'
+    required: false
+    default: '10.0.x'
+  solution-file:
+    description: 'Solution file to build'
+    required: false
+    default: ''
+  bsr-token:
+    description: 'BSR_TOKEN for authentication with BSR NuGet source'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    # Ensure that the github-Official-EwE NuGet source is configured. The standard GITHUB_TOKEN is used. It's automatically created by GitHub Actions and is available as 'github.toke'
+    # So you don't have to pass it to this action explicitly. (because 'secrets', and subsequently 'secrets.GITHUB_TOKEN' is not accessible in reusable workflows)
+    - name: Ensure github-Official-EwE NuGet source
+      run: |
+        if dotnet nuget list source | grep -q "github-Official-EwE"; then
+          dotnet nuget remove source github-Official-EwE
+        fi
+        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+          --name "github-Official-EwE" \
+          --username ${{ github.repository_owner }} \
+          --password ${{ github.token }} \
+          --store-password-in-clear-text
+      shell: bash
+
+    - name: Ensure BSR NuGet source
+      if: ${{ inputs.bsr-token != '' }}
+      run: |
+        if dotnet nuget list source | grep -q "BSR"; then
+          dotnet nuget remove source BSR
+        fi
+        dotnet nuget add source "https://buf.build/gen/nuget/index.json" \
+          --name "BSR" \
+          --username "bsr" \
+          --password "${{ inputs.bsr-token }}" \
+          --store-password-in-clear-text
+      shell: bash
+
+    - name: Restore dependencies
+      run: dotnet restore ${{ inputs.solution-file }}
+      shell: bash
+
+    - name: Build solution
+      run: dotnet build ${{ inputs.solution-file }} --configuration Release --no-restore
+      shell: bash
+   
+
+
+

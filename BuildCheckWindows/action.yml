@@ -1,0 +1,45 @@
+name: 'Build check for .net' 
+description: 'Builds the project. Used to check if there are build errors before checking in'
+inputs:
+  dotnet-version:
+    description: 'Version of .NET to use'
+    required: false
+    default: '10.0.x'
+  solution-file:
+    description: 'Solution file to build'
+    required: false
+    default: ''
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+
+    # Ensure that the github-Official-EwE NuGet source is configured. The standard GITHUB_TOKEN is used. It's automatically created by GitHub Actions and is available as 'github.toke'
+    # So you don't have to pass it to this action explicitly. (because 'secrets', and subsequently 'secrets.GITHUB_TOKEN' is not accessible in reusable workflows)
+    - name: Ensure github-Official-EwE NuGet source
+      run: |
+        if (dotnet nuget list source | Select-String "github-Official-EwE") {
+          dotnet nuget remove source github-Official-EwE
+        }
+        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" `
+          --name "github-Official-EwE" `
+          --username ${{ github.repository_owner }} `
+          --password ${{ github.token }} `
+          --store-password-in-clear-text
+      shell: pwsh
+
+    - name: Restore dependencies
+      run: dotnet restore "${{ inputs.solution-file }}"
+      shell: pwsh
+
+    - name: Build solution
+      run: dotnet build "${{ inputs.solution-file }}" --configuration Release --no-restore
+      shell: pwsh
