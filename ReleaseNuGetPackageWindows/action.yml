@@ -97,7 +97,7 @@ runs:
 
     - name: Publish to GitHub Packages
       run: |
-        Get-ChildItem -Path ./nuget -Filter *symbols.nupkg | ForEach-Object {
+        Get-ChildItem -Path ./nuget -Filter *.nupkg | Where-Object { $_.Name -notlike "*.symbols.nupkg" } | ForEach-Object {
           dotnet nuget push $_.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ github.token }} --skip-duplicate
         }
       shell: pwsh
