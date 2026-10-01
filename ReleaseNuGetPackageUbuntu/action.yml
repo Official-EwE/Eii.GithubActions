@@ -93,8 +93,8 @@ runs:
 
     - name: Publish to GitHub Packages
       run: |
-        for file in ./nuget/*symbols.nupkg; do
-          if [ -f "$file" ]; then
+        for file in ./nuget/*.nupkg; do
+          if [[ -f "$file" && "$file" != *.symbols.nupkg ]]; then
             dotnet nuget push "$file" --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ github.token }} --skip-duplicate
           fi
         done
