@@ -36,15 +36,6 @@ runs:
         restore-keys: |
           nuget-${{ runner.os }}-
 
-    # - name: Cache build output      # Try to find if a build cached comiled files. Maybe the build_check. This saves time
-    #   uses: actions/cache@v4
-    #   with:
-    #     path: |
-    #       **/bin
-    #       **/obj
-    #     key: build-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-    #     restore-keys: |
-    #       build-${{ runner.os }}-
 
     - name: Run GitVersion
       id: gitversion

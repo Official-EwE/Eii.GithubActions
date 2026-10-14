@@ -99,3 +99,15 @@ runs:
           fi
         done
       shell: bash
+
+    # Requires 'permissions: contents: write' in the calling workflow
+    - name: Create git tag
+      run: |
+        tag="v${{ steps.gitversion.outputs.SemVer }}"
+        if [ -n "$(git ls-remote --tags origin "refs/tags/$tag")" ]; then
+          echo "Tag $tag already exists, skipping"
+          exit 0
+        fi
+        git tag "$tag"
+        git push origin "$tag"
+      shell: bash
