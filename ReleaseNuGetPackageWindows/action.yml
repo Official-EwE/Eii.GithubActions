@@ -36,15 +36,15 @@ runs:
         restore-keys: |
           nuget-${{ runner.os }}-
 
-    - name: Cache build output      # Try to find if a build cached comiled files. Maybe the build_check. This saves time
-      uses: actions/cache@v4
-      with:
-        path: |
-          **/bin
-          **/obj
-        key: build-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
-        restore-keys: |
-          build-${{ runner.os }}-
+    # - name: Cache build output      # Try to find if a build cached comiled files. Maybe the build_check. This saves time
+    #   uses: actions/cache@v4
+    #   with:
+    #     path: |
+    #       **/bin
+    #       **/obj
+    #     key: build-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+    #     restore-keys: |
+    #       build-${{ runner.os }}-
 
     - name: Run GitVersion
       id: gitversion
@@ -100,4 +100,18 @@ runs:
         Get-ChildItem -Path ./nuget -Filter *.nupkg | Where-Object { $_.Name -notlike "*.symbols.nupkg" } | ForEach-Object {
           dotnet nuget push $_.FullName --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --api-key ${{ github.token }} --skip-duplicate
         }
+      shell: pwsh
+
+    # Requires 'permissions: contents: write' in the calling workflow
+    - name: Create git tag
+      run: |
+        $tag = "v${{ steps.gitversion.outputs.SemVer }}"
+        if (git ls-remote --tags origin "refs/tags/$tag") {
+          Write-Host "Tag $tag already exists, skipping"
+          exit 0
+        }
+        git tag $tag
+        if ($LASTEXITCODE -ne 0) { exit 1 }
+        git push origin $tag
+        if ($LASTEXITCODE -ne 0) { exit 1 }
       shell: pwsh

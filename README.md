@@ -20,7 +20,8 @@ It accepts the same inputs as `BuildCheckWindows` (`dotnet-version`, `solution-f
 
 ## ReleaseNuGetPackageWindows
 This is a custom action that creates a nuget package.
-It uses powershell (`pwsh`) to run the build script, and is designed to run on `windows-latest`.
+designed to run on `windows-latest`.
+After a successful publish it creates and pushes a lightweight git tag `v<SemVer>`. The calling workflow must grant `permissions: contents: write`.
 
 ## ReleaseNuGetPackageNet80
 THis is a custom action that creates a nuget package.
