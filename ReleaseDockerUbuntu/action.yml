@@ -1,0 +1,95 @@
+name: 'Build, Push and Tag Docker Image'
+description: 'Calculates a semantic version with GitVersion, builds and pushes a Docker image to GHCR with the tags latest and <version>, and creates a git tag v<version>'
+
+inputs:
+  image-name:
+    description: 'Full image name without tag, in lowercase (for example ghcr.io/official-ewe/eiiecopathrunnerrunprocess)'
+    required: true
+  github-token:
+    description: 'GitHub token used to log in to GHCR, as Docker build secret and to push the git tag'
+    required: false
+    default: ${{ github.token }}
+  dockerfile:
+    description: 'Path to the Dockerfile (for example ./Eii.Ecopath.Runner.RunProcess/Dockerfile)'
+    required: true
+  context:
+    description: 'Docker build context'
+    required: false
+    default: '.'
+
+outputs:
+  version:
+    description: 'The semantic version that was calculated and used for the tags'
+    value: ${{ steps.gitversion.outputs.SemVer }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install GitVersion
+      uses: gittools/actions/gitversion/setup@v4.1.0
+      with:
+        versionSpec: '6.4.0'
+
+    - name: Run GitVersion
+      id: gitversion
+      uses: gittools/actions/gitversion/execute@v4.1.0
+      with:
+        overrideConfig: |
+          workflow=TrunkBased/preview1
+          commit-message-incrementing=Enabled
+          tag-prefix=v
+          increment=Patch
+
+    - name: Show extracted version
+      run: echo "Version is ${{ steps.gitversion.outputs.SemVer }}"
+      shell: bash
+
+    - name: Log in to GHCR
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: echo "$GITHUB_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      shell: bash
+
+    - name: Build Docker image
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        IMAGE: ${{ inputs.image-name }}
+        VERSION: ${{ steps.gitversion.outputs.SemVer }}
+        DOCKERFILE: ${{ inputs.dockerfile }}
+        CONTEXT: ${{ inputs.context }}
+      run: |
+        docker build \
+          -f "$DOCKERFILE" \
+          -t "$IMAGE:latest" \
+          -t "$IMAGE:$VERSION" \
+          --secret id=GITHUB_TOKEN,env=GITHUB_TOKEN \
+          "$CONTEXT"
+      shell: bash
+
+    - name: Push Docker image
+      env:
+        IMAGE: ${{ inputs.image-name }}
+        VERSION: ${{ steps.gitversion.outputs.SemVer }}
+      run: |
+        docker push "$IMAGE:latest"
+        docker push "$IMAGE:$VERSION"
+      shell: bash
+
+    # Requires 'permissions: contents: write' in the calling workflow
+    - name: Create git tag
+      env:
+        VERSION: ${{ steps.gitversion.outputs.SemVer }}
+      run: |
+        tag="v$VERSION"
+        if [ -n "$(git ls-remote --tags origin "refs/tags/$tag")" ]; then
+          echo "Tag $tag already exists, skipping"
+          exit 0
+        fi
+        git tag "$tag"
+        git push origin "$tag"
+      shell: bash
